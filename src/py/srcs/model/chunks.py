@@ -79,7 +79,7 @@ class HashType(Enum):
 
 class Signature(NamedTuple):
     hashtype: int
-    signature: bytes
+    hash: bytes
 
     @staticmethod
     def FromFile(

@@ -1,7 +1,7 @@
 from typing import Iterator
 import re
 from pathlib import Path
-from ..utils import isBinary
+from ..utils.files import isBinary
 from ..model import Chunk, Range, Position, TextPosition, Location, Signature
 
 # NOTE: We probably want to implement per-file-format chunk iterator. We
