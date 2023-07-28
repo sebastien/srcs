@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from hashlib import sha512
 from uuid import uuid4
+import re, os
 
 T = TypeVar("T")
 
@@ -27,12 +28,15 @@ T = TypeVar("T")
 # of a file, or a specific part of a semantic representation of a program
 # (ie. a symbol).
 class Position(NamedTuple):
-    """Represents a position in binary"""
+    """Represents a position in a binary data."""
 
     offset: int
 
 
 class TextPosition(NamedTuple):
+    """Represents a position in  a binary data, extended with line and
+    column information."""
+
     offset: int
     line: Optional[int] = None
     column: Optional[int] = None
@@ -170,18 +174,29 @@ def signature(
 
 
 def makeID() -> str:
+    """Wrapper function to generate a UUID string identifier suitable"""
     return str(uuid4())
 
 
 def isEmptyContent(chunk: bytes) -> bool:
+    """Tells if the chunk only has empty content."""
     return all(c in (b" ", b"\n", b"\t") for c in chunk)
 
 
 def getLocation(path: Path, base: Path) -> Location:
+    """Creates a location object from a local path and a base."""
     return Location(path.resolve().relative_to(base.resolve()).parts)
 
 
+# NOTE: We probably want to implement per-file-format chunk iterator. We
+# should have simple ones like this one, then use ctypes, then use tree
+# sitter, then use AST like `python.ast`.
+RE_SEPARATOR_BYTES = re.compile(b"\r?\n([\t ]*\r?\n)+")
+
+
 def iterChunks(path: Path, base: Path = Path.cwd()) -> Iterator[Chunk]:
+    """Iterates on the chunks available at the given `path`. This is typically
+    what would be specialized with specific parsers to extract the structure."""
     loc = getLocation(path, base)
     sym = Symbol([makeID()])
     if isBinary(path):
@@ -193,63 +208,68 @@ def iterChunks(path: Path, base: Path = Path.cwd()) -> Iterator[Chunk]:
         )
     else:
         offset: int = 0
-        line: int = 1
-        column: int = 1
-        buffer: bytes = b""
-        is_empty_block: bool = False
+        line: int = 0
+        column: int = 0
 
-        with path.open("rb") as f:
-            while True:
-                chunk = f.read(1)
-                if not chunk:
-                    break
-
-                chunk_is_empty = isEmptyContent(chunk)
-                if is_empty_block is None:
-                    is_empty_block = chunk_is_empty
-
-                if chunk_is_empty != is_empty_block:
-                    start_position = TextPosition(
-                        offset=offset - len(buffer),
-                        line=line,
-                        column=column - len(buffer),
-                    )
-                    end_position = TextPosition(offset, line, column)
-                    yield Chunk(
-                        location=loc,
-                        scope=Symbol([makeID()]),
-                        range=Range(start_position, end_position),
-                        signature=signature(
-                            path, start_position.offset, end_position.offset
-                        ),
-                    )
-                    buffer = b""
-                    is_empty_block = chunk_is_empty
-
-                buffer += chunk
-                offset += 1
-                if chunk == b"\n":
-                    line += 1
-                    column = 1
-                else:
-                    column += 1
-
-            if buffer:
-                start_position = TextPosition(
-                    offset - len(buffer), line, column - len(buffer)
-                )
-                end_position = TextPosition(offset, line, column)
-                yield Chunk(
+        def makeChunk(
+            offset: int, line: int, column: int, text: bytes
+        ) -> tuple[Chunk, int, int, int]:
+            n: int = len(text)
+            l: int = line + text.count(b"\n")
+            c: int = len(text) - max(0, text.rfind(b"\n"))
+            o: int = offset + n
+            return (
+                Chunk(
                     location=loc,
                     scope=Symbol([makeID()]),
-                    range=Range(start_position, end_position),
-                    signature=signature(
-                        path, start_position.offset, end_position.offset
+                    range=Range(
+                        TextPosition(offset, line, column),
+                        TextPosition(o, l, c),
                     ),
+                    signature=signature(path, offset, o),
+                ),
+                o,
+                l,
+                c,
+            )
+
+        with open(path, "rb") as f:
+            for match in RE_SEPARATOR_BYTES.finditer(text := f.read()):
+                # We generate the previous chunk
+                if (o := match.start()) > offset:
+                    chunk, offset, line, column = makeChunk(
+                        offset, line, column, text[offset:o]
+                    )
+                    yield chunk
+                    assert offset == o
+                chunk, offset, line, column = makeChunk(
+                    offset, line, column, text[o : match.end()]
                 )
+                assert offset == match.end()
+                yield chunk
+            if offset < len(text):
+                chunk, offset, line, column = makeChunk(
+                    offset, line, column, text[offset:]
+                )
+                yield chunk
 
 
-for chunk in iterChunks(Path(__file__)):
+def loadChunk(chunk: Chunk) -> bytes:
+    fd = os.open("/".join(chunk.location.path), os.O_RDONLY)
+    os.lseek(fd, chunk.range.start.offset, os.SEEK_SET)
+    data = os.read(fd, chunk.range.end.offset - chunk.range.start.offset)
+    os.close(fd)
+    return data
+
+
+# We iterate on the chunks on this specific file, and we make sure we got
+# the whole thing right.
+chunks: list[bytes] = []
+for chunk in iterChunks(path := Path(__file__)):
     print(chunk)
+    data = loadChunk(chunk)
+    print("-->", data)
+    chunks.append(data)
+assert path.read_bytes() == b"".join(chunks)
 
 # EOF
