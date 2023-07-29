@@ -1,0 +1,16 @@
+name: Make Check
+
+on: [push]
+
+jobs:
+  build:
+    name: Run Make Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    - name: Run Make Check
+      run: make check
+
