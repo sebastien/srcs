@@ -1,1 +1,9 @@
-from .chunks import Position, TextPosition, Range, Location, HashType, Signature, Chunk
+from .chunks import (  # NOQA: F401
+    Position,
+    TextPosition,
+    Range,
+    Location,
+    HashType,
+    Signature,
+    Chunk,
+)

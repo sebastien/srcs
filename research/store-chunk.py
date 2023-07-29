@@ -15,7 +15,14 @@ import base64
 TKey = list[str]
 
 
-class FileStore:
+# --
+# The ChunkStore stores chunks organised by signature. This is the physical
+# view of the repository. Now these chunks need to be assembled in a
+# logical view of the project: chunks assembled in files, and then
+# symbols mapped to files.
+
+
+class ChunkStore:
     def __init__(self, path: Path | str):
         self.root = (Path(path) if isinstance(path, str) else path).absolute()
 
@@ -38,6 +45,8 @@ class FileStore:
                 key[-1] = key[-1].rstrip(".chunk")
                 yield (Chunk, self.decodeSignature("".join(key)))
 
+    # TODO: Load/Save should be orthogonal, I think we should probably have
+    # an LZMA option?
     def load(
         self, chunk: Chunk, cwd: Path = Path.cwd(), *, path: Path | None = None
     ) -> bytes:
@@ -65,7 +74,7 @@ class FileStore:
         return base64.b32decode(data)
 
 
-store = FileStore("data-chunks")
+store = ChunkStore("data/chunks")
 
 for chunk in BlockParser.Chunks(
     Path(__file__).parent.parent / "src/py/srcs/model/chunks.py"

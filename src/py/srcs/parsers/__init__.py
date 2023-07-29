@@ -1,1 +1,1 @@
-from .block import BlockParser
+from .block import BlockParser  # NOQA: F401

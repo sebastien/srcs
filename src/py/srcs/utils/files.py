@@ -118,4 +118,18 @@ def isBinary(path: Path) -> bool:
     return False
 
 
+def dotfile(name: str, base: Optional[Path] = None) -> Optional[Path]:
+    """Looks for the file `name` in the current directory or its ancestors"""
+    user_home: Optional[str] = os.getenv("HOME")
+    path = Path(base or ".").absolute()
+    while path != path.parent:
+        if (loc := path / name).exists():
+            return loc
+        if path != user_home:
+            path = path.parent
+        else:
+            break
+    return None
+
+
 # EOF

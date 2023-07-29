@@ -43,7 +43,7 @@ def strencode(data: bytes, mapping: str = CHARS) -> str:
     return "".join(encoded)
 
 
-def strdecode(encoded: str, mapping: str = CHARS):
+def strdecode(encoded: str, mapping: str = CHARS) -> bytes:
 
     n = len(mapping)
     num = 0
@@ -54,9 +54,7 @@ def strdecode(encoded: str, mapping: str = CHARS):
         num = num * n + CHARS.index(char)
 
     # Convert the integer back to bytes
-    decoded_bytes = num.to_bytes((num.bit_length() + 7) // 8, byteorder="big")
-
-    return decoded_bytes
+    return num.to_bytes((num.bit_length() + 7) // 8, byteorder="big")
 
 
 def strchunks(text: str, size: int = 10) -> list[str]:

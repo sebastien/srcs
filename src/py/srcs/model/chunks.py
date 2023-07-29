@@ -1,9 +1,7 @@
-from typing import NamedTuple, Optional, TypeVar, Iterator
+from typing import NamedTuple, Optional, TypeVar
 from enum import Enum
 from pathlib import Path
 from hashlib import sha512
-from uuid import uuid4
-import re, os
 
 T = TypeVar("T")
 
