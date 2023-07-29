@@ -57,11 +57,11 @@ class BlockParser:
                             offset, line, column, text[offset:o]
                         )
                         yield chunk
-                        assert offset == o
+                        assert offset == o  # nosec: B101
                     chunk, offset, line, column = makeChunk(
                         offset, line, column, text[o : match.end()]
                     )
-                    assert offset == match.end()
+                    assert offset == match.end()  # nosec: B101
                     yield chunk
                 if offset < len(text):
                     chunk, offset, line, column = makeChunk(

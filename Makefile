@@ -5,23 +5,28 @@ MODULES_PY:=$(filter-out %/__main__,$(filter-out %/__init__,$(SOURCES_PY:$(PATH_
 FLAKE8?=flake8
 BLACK?=black
 MYPYC?=mypyc
+BANDIT?=bandit
 
+
+
+check: lint audit
+	@echo "OK"
 
 audit: require-py-bandit
-	bandit -r $(PATH_SOURCES_PY)
-
+	@$(BANDIT) -r $(PATH_SOURCES_PY)
 
 # NOTE: The compilation seems to create many small modules instead of a big single one
-compile:
+compile: require-py-mypyc
 	# NOTE: Output is going to be like 'extra/__init__.cpython-310-x86_64-linux-gnu.so'
-	$(foreach M,$(MODULES_PY),mkdir -p build/$M;)
+	@$(foreach M,$(MODULES_PY),mkdir -p build/$M;)
 	env -C build MYPYPATH=$(realpath .)/src/py $(MYPYC) -p $(notdir $(firstword $(wildcard $(PATH_SOURCES_PY))))
 
-lint:
-	$(FLAKE8) --ignore=E1,E203,E302,E401,E501,E741,F821,W $(SOURCES_PY)
 
-format:
-	$(BLACK) $(SOURCES_PY)
+lint: require-py-flake8
+	@$(FLAKE8) --ignore=E1,E203,E302,E401,E501,E741,F821,W $(SOURCES_PY)
+
+format: require-py-black
+	@$(BLACK) $(SOURCES_PY)
 
 require-py-%:
 	@if [ -z "$$(which '$*' 2> /dev/null)" ]; then $(PYTHON) -mpip install --user --upgrade '$*'; fi
@@ -29,5 +34,5 @@ require-py-%:
 print-%:
 	$(info $*=$($*))
 
-.PHONY: audit
+.PHONY: audit check compile lint format
 # EOF
