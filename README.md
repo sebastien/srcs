@@ -5,11 +5,9 @@
     /_______  / |____|_  /\______  /_______  /
             \/         \/        \/        \/
 
-
 ![Check](https://github.com/sebastien/srcs/actions/workflows/check.yml/badge.svg)
 
 *Structured Revision Control System*
-
 
 ## References
 

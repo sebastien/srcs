@@ -1,4 +1,4 @@
-name: Make Check
+name: Check
 
 on: [push]
 
