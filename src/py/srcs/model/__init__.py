@@ -5,5 +5,6 @@ from .chunks import (  # NOQA: F401
     Location,
     HashType,
     Signature,
+    signatureFromFile,
     Chunk,
 )

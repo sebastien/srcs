@@ -1,7 +1,7 @@
 import subprocess  # nosec: B404
 
 
-class CommandError(RuntimeError):
+class CommandError(Exception):
     def __init__(self, command: list[str], status: int, err: bytes):
         super().__init__()
         self.command = command

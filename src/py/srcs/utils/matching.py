@@ -3,7 +3,8 @@ import re
 import fnmatch
 from enum import Enum
 from pathlib import Path
-from .utils import shell, dotfile
+from .system import shell
+from .files import dotfile
 
 
 # --
@@ -149,10 +150,10 @@ def pattern(
             exact.append(m.group("path"))
         else:
             partial.append(p)
-    expr_exact, expr_partial = (
+    expr_exact, expr_partial = [
         "|".join(fnmatch.translate(_).lstrip("(?s:").rstrip(")\\Z") for _ in p)
         for p in (exact, partial)
-    )
+    ]
 
     return re.compile(
         f"^({expr_exact}|{expr_partial})(/.*)$"
@@ -201,8 +202,8 @@ def filterset(collection: str) -> RawFilters:
             )
 
 
-DEFAULT_KEEPS = []
-DEFAULT_REJECTS = [".git", ".svg", "*.swp", ".cache", "*.pyc"]
+DEFAULT_KEEPS: list[str] = []
+DEFAULT_REJECTS: list[str] = [".git", ".svg", "*.swp", ".cache", "*.pyc"]
 
 
 def gitignored(path: Optional[Path] = None) -> RawFilters:

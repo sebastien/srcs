@@ -2,7 +2,15 @@ from typing import Iterator
 import re
 from pathlib import Path
 from ..utils.files import isBinary
-from ..model import Chunk, Range, Position, TextPosition, Location, Signature
+from ..model import (
+    Chunk,
+    Range,
+    Position,
+    TextPosition,
+    Location,
+    Signature,
+    signatureFromFile,
+)
 
 # NOTE: We probably want to implement per-file-format chunk iterator. We
 # should have simple ones like this one, then use ctypes, then use tree
@@ -21,7 +29,7 @@ class BlockParser:
             yield Chunk(
                 location=loc,
                 range=Range(Position(0), Position(path.stat().st_size)),
-                signature=Signature.FromFile(path),
+                signature=signatureFromFile(path),
             )
         else:
             offset: int = 0
@@ -42,7 +50,7 @@ class BlockParser:
                             TextPosition(offset, line, column),
                             TextPosition(o, l, c),
                         ),
-                        signature=Signature.FromFile(path, offset, o),
+                        signature=signatureFromFile(path, offset, o),
                     ),
                     o,
                     l,

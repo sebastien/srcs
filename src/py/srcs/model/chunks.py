@@ -79,26 +79,26 @@ class Signature(NamedTuple):
     hashtype: int
     hash: bytes
 
-    @staticmethod
-    def FromFile(
-        path: Path, start: Optional[int] = None, end: Optional[int] = None
-    ) -> "Signature":
-        """Returns the SHA512 signature for the file at the given path, optionally taking
-        offsets to calculate the signature of a subset"""
-        h = sha512()
-        with path.open("rb") as file:
-            if start:
-                file.seek(start)
-            if end is None:
-                for chunk in iter(lambda: file.read(1024), b""):
-                    h.update(chunk)
-            else:
-                to_read = end - (start or 0)
-                while to_read > 0:
-                    chunk = file.read(min(1024, to_read))
-                    h.update(chunk)
-                    to_read -= len(chunk)
-        return Signature(HashType.SHA512.value, h.digest())
+
+def signatureFromFile(
+    path: Path, start: Optional[int] = None, end: Optional[int] = None
+) -> "Signature":
+    """Returns the SHA512 signature for the file at the given path, optionally taking
+    offsets to calculate the signature of a subset"""
+    h = sha512()
+    with path.open("rb") as file:
+        if start:
+            file.seek(start)
+        if end is None:
+            for chunk in iter(lambda: file.read(1024), b""):
+                h.update(chunk)
+        else:
+            to_read = end - (start or 0)
+            while to_read > 0:
+                chunk = file.read(min(1024, to_read))
+                h.update(chunk)
+                to_read -= len(chunk)
+    return Signature(HashType.SHA512.value, h.digest())
 
 
 class Chunk(NamedTuple):

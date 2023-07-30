@@ -1,4 +1,4 @@
-from typing import Generator, Union, Optional, ContextManager
+from typing import Generator, Union, Optional, ContextManager, Callable
 from pathlib import Path
 from sys import getdefaultencoding
 import os
@@ -81,6 +81,7 @@ class Files:
         path: Union[str, Path],
         followLinks: bool = False,
         includeDir: bool = False,
+        predicate: Callable[[Path], bool] | None = None,
     ) -> Generator[Path, bool, None]:
         """Does a breadth-first walk of the filesystem, yielding non-directory
         paths that match the `accepts` and `rejects` filters."""
@@ -95,7 +96,9 @@ class Files:
                 item_rel_path = item_abs_path.relative_to(root)
                 is_link = os.path.islink(item_abs_path)
                 is_dir = item_abs_path.resolve().is_dir()
-                if not (is_dir and includeDir is False):
+                if predicate and not predicate(item_rel_path):
+                    continue
+                elif not (is_dir and includeDir is False):
                     continues = yield item_rel_path
                 else:
                     continues = True
