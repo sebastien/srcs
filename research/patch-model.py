@@ -184,7 +184,13 @@ def getChunkData(chunk: Chunk, base: Path = BASE_PATH) -> bytes:
         return f.read(chunk.range.end.offset - o)
 
 
+# This seemingly over-complicated function actually does a naive parsing
+# of a text file, and chunking it splitting based on empty lines blocks (more
+# than one line required). It's not as easy to implement as it seems,
+# try asking GPT-4!
 def iterChunks(path: Path, base: Path = BASE_PATH) -> Iterator[Chunk]:
+    """Yields chunks detected in the file, alternating chunks with content
+    and empty chunks."""
     loc = getLocation(path, base)
     sym = Symbol([makeID()])
     if isBinary(path):
