@@ -1,0 +1,4 @@
+appenv_declare  srcs
+appenv_prepend PATH $APPENV_DIR/bin
+appenv_prepend PYTHONPATH $APPENV_DIR/src/py
+# EOF
