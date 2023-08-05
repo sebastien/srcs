@@ -179,7 +179,7 @@ def matches(
         return True
 
 
-def filterset(collection: str) -> RawFilters:
+def filterset(collection: str) -> RawFilters:  # static analysis: ignore
     """Returns"""
     match collection:
         case "none":

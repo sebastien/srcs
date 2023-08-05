@@ -29,7 +29,7 @@ class mkdtemp(ContextManager):
         self.path = Path(tempfile.mkdtemp(prefix="ss-", suffix=".cry"))
 
     def cleanup(self):
-        if self.path and self.path.exists():
+        if self.path.exists():
             shutil.rmtree(self.path)
 
     def __enter__(self):
@@ -57,7 +57,7 @@ class mkstemp(ContextManager):
         return self.path
 
     def __exit__(self, type, value, traceback):
-        if self.path and self.path.exists():
+        if self.path.exists():
             self.path.unlink()
 
 

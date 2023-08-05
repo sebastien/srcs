@@ -10,6 +10,7 @@ MYPYC?=mypyc
 BANDIT?=bandit
 LPYTHON?=lpython
 SHEDSKIN?=shedskin
+PYANALYZE?=pyanalyze
 
 PYTHON_MODULE=$(notdir $(firstword $(wildcard $(PATH_SOURCES_PY)/*)))
 
@@ -35,8 +36,11 @@ compile-lpython:
 	@mkdir -p dist
 	$(LPYTHON) $(SOURCES_PY) -I/usr/lib/python/python3.11/site-packages -I/usrc/lib64/python3.11 -o dist/$(PYTHON_MODULE)
 
-lint: require-py-flake8
+lint: require-py-flake8 require-py-pyanalyze
 	@$(FLAKE8) --ignore=E1,E203,E302,E401,E501,E741,F821,W $(SOURCES_PY)
+	@$(PYANALYZE) $(SOURCES_PY)
+
+
 
 format: require-py-black
 	@$(BLACK) $(SOURCES_PY)

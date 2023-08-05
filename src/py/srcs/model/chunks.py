@@ -2,6 +2,7 @@ from typing import NamedTuple, Optional, TypeVar
 from enum import Enum
 from pathlib import Path
 from hashlib import sha512
+import os
 
 T = TypeVar("T")
 
@@ -70,6 +71,10 @@ class Location(NamedTuple):
         """Creates a location object from a local path and a base."""
         return Location(path.resolve().relative_to(base.resolve()).parts)
 
+    @staticmethod
+    def Path(location: "Location", base: Path = Path.cwd()) -> Path:
+        return base / "/".join(location.path)
+
 
 class HashType(Enum):
     SHA512 = 1
@@ -105,6 +110,14 @@ class Chunk(NamedTuple):
     location: Location
     range: Range
     signature: Signature
+
+    @staticmethod
+    def Read(chunk: "Chunk", path: Path = Path.cwd()) -> bytes:
+        fd = os.open(str(Location.Path(chunk.location, path)), os.O_RDONLY)
+        os.lseek(fd, chunk.range.start.offset, 0)
+        data = os.read(fd, chunk.range.end.offset - chunk.range.start.offset)
+        os.close(fd)
+        return data
 
 
 # --

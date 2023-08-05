@@ -5,9 +5,11 @@ import grp, pwd, os, mimetypes
 import magic
 from srcs.utils.files import Files, isBinary
 
-# --
-# What we want to do here is to represent a source tree as a set of chunks.
 
+# --
+# # Filesystem Tree
+#
+# This module implements a representation of the filesystem as a tree.
 
 TPath = list[str]
 

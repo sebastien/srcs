@@ -8,7 +8,6 @@ from ..model import (
     Position,
     TextPosition,
     Location,
-    Signature,
     signatureFromFile,
 )
 
