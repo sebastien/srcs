@@ -147,6 +147,7 @@ class FileTree(NamedTuple):
     files: dict[str, FileEntry]
 
 
+
 def fileEntry(path: Path) -> FileEntry:
     return FileEntry.FromPath(path)
 
@@ -162,6 +163,9 @@ def fileTree(base: Path) -> "FileTree":
     """Returns a tree representation of the files at the given path."""
     for atom in Files.Walk(base, predicate=filePredicate):
         print(fileEntry(atom))
+
+
+
 
 
 if __name__ == "__main__":
