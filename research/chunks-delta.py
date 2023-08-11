@@ -14,6 +14,10 @@ T = TypeVar("T")
 # --
 # In this notebook, we're looking at how, given a file, we can maintain a list
 # of chunks, and compare them across revisions.
+#
+# We want the change tracking strategy to be pluggable, as depending on the
+# type of file (ie. programming language), we could refine the change
+# detection to be more accurate.
 
 
 @dataclass(frozen=True, slots=True)
@@ -35,7 +39,6 @@ class TextChunk(NamedTuple):
 # NOTE: The key challenge here is to find which chunks may be a variant of another chunk. This
 # is definitely a tricky thing to do.
 
-RE_NONWORD = re.compile(r"[^A-Za-z_0-9]+")
 RE_NONWORD = re.compile(r"[^A-Za-z_0-9]+")
 
 
